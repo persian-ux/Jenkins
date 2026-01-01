@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CloudSphere Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-gradient: radial-gradient(circle at top left, #4f46e5, #0f172a 55%, #020617 100%);
+      --primary: #6366f1;
+      --primary-soft: rgba(99, 102, 241, 0.1);
+      --accent: #22d3ee;
+      --danger: #fb7185;
+      --success: #4ade80;
+      --text-main: #e5e7eb;
+      --text-muted: #9ca3af;
+      --card-bg: rgba(15, 23, 42, 0.78);
+      --card-border: rgba(148, 163, 184, 0.35);
+      --glass: rgba(15, 23, 42, 0.75);
+      --shadow-soft: 0 24px 60px rgba(15, 23, 42, 0.9);
+      --radius-xl: 26px;
+      --radius-lg: 20px;
+      --radius-pill: 999px;
+      --blur: 26px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 20px;
+      overflow-x: hidden;
+    }
+
+    .grid-bg {
+      position: fixed;
+      inset: -40px;
+      background-image: linear-gradient(rgba(148, 163, 184, 0.09) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(148, 163, 184, 0.09) 1px, transparent 1px);
+      background-size: 70px 70px;
+      opacity: 0.45;
+      -webkit-mask-image: radial-gradient(circle at top, black 0, transparent 65%);
+      mask-image: radial-gradient(circle at top, black 0, transparent 65%);
+      pointer-events: none;
+      z-index: -2;
+    }
+
+    .glow-orb {
+      position: fixed;
+      width: 420px;
+      height: 420px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(56, 189, 248, 0.8), transparent 60%);
+      filter: blur(40px);
+      opacity: 0.55;
+      top: -60px;
+      right: -60px;
+      mix-blend-mode: screen;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .glow-orb.orb-2 {
+      width: 340px;
+      height: 340px;
+      background: radial-gradient(circle, rgba(244, 114, 182, 0.7), transparent 60%);
+      bottom: -40px;
+      left: -40px;
+      top: auto;
+      right: auto;
+      opacity: 0.5;
+    }
+
+    .shell {
+      width: 100%;
+      max-width: 1180px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.25fr) minmax(0, 1.1fr);
+      gap: 26px;
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.6));
+      border-radius: 32px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      box-shadow: var(--shadow-soft);
+      -webkit-backdrop-filter: blur(30px) saturate(160%);
+      backdrop-filter: blur(30px) saturate(160%);
+      padding: 26px 26px 26px 26px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .shell::before {
+      content: "cloud";
+      position: absolute;
+      top: -36px;
+      right: -16px;
+      font-size: 96px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: rgba(15, 23, 42, 0.7);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .divider {
+      position: absolute;
+      left: 50%;
+      top: 22px;
+      bottom: 22px;
+      width: 1px;
+      background: linear-gradient(to bottom, transparent, rgba(148, 163, 184, 0.6), transparent);
+      opacity: 0.65;
+      pointer-events: none;
+    }
+
+    .left, .right {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    .badge-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .pill-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: var(--radius-pill);
+      background: linear-gradient(120deg, rgba(22, 163, 74, 0.15), rgba(59, 130, 246, 0.15));
+      border: 1px solid rgba(52, 211, 153, 0.5);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--success);
+    }
+
+    .pill-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: var(--success);
+      box-shadow: 0 0 10px rgba(74, 222, 128, 0.8);
+    }
+
+    .pill-text-sub {
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    .tiny-pill {
+      padding: 5px 10px;
+      border-radius: var(--radius-pill);
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      font-size: 10px;
+      color: var(--text-muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+      background: rgba(15, 23, 42, 0.6);
+    }
+
+    .spark {
+      width: 14px;
+      height: 14px;
+      border-radius: 6px;
+      background: radial-gradient(circle at top left, #fbbf24, #ef4444);
+      box-shadow: 0 0 18px rgba(251, 191, 36, 0.75);
+    }
+
+    h1 {
+      font-size: clamp(2.4rem, 3vw + 1.2rem, 3.4rem);
+      line-height: 1.06;
+      letter-spacing: 0.02em;
+      margin-top: 4px;
+    }
+
+    h1 span {
+      background: linear-gradient(120deg, #a855f7, #22d3ee, #4ade80);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: 0 0 30px rgba(6, 182, 212, 0.4);
+    }
+
+    .subtitle {
+      margin-top: 10px;
+      font-size: 0.98rem;
+      color: var(--text-muted);
+      max-width: 420px;
+    }
+
+    .subtitle strong {
+      color: #e5e7eb;
+      font-weight: 500;
+    }
+
+    .cta-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      border: none;
+      outline: none;
+      cursor: pointer;
+      padding: 11px 22px;
+      border-radius: var(--radius-pill);
+      background: radial-gradient(circle at top left, #22d3ee, #6366f1);
+      color: white;
+      font-size: 0.95rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 18px 35px rgba(79, 70, 229, 0.65);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-primary::after {
+      content: "";
+      position: absolute;
+      inset: -40%;
+      background: radial-gradient(circle at 10% 0, rgba(248, 250, 252, 0.4), transparent 55%);
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+
+    .btn-primary:hover::after {
+      opacity: 1;
+    }
+
+    .btn-secondary {
+      border-radius: var(--radius-pill);
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      background: rgba(15, 23, 42, 0.6);
+      color: var(--text-main);
+      padding: 10px 16px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(20px);
+    }
+
+    .btn-secondary-icon {
+      width: 18px;
+      height: 18px;
+      border-radius: 8px;
+      background: radial-gradient(circle at top left, #a855f7, #6366f1);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
+
+    .confidence-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 18px;
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      flex-wrap: wrap;
+    }
+
+    .avatars {
+      display: flex;
+    }
+
+    .avatar {
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      border: 2px solid rgba(15, 23, 42, 0.9);
+      background-size: cover;
+      background-position: center;
+      margin-left: -8px;
+      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.9);
+    }
+
+    .avatar:nth-child(1) { background-image: linear-gradient(135deg, #22d3ee, #0ea5e9); }
+    .avatar:nth-child(2) { background-image: linear-gradient(135deg, #a855f7, #ec4899); }
+    .avatar:nth-child(3) { background-image: linear-gradient(135deg, #4ade80, #22c55e); }
+    .avatar:nth-child(4) { background-image: linear-gradient(135deg, #f97316, #e11d48); }
+
+    .confidence-row strong {
+      color: #e5e7eb;
+      font-weight: 600;
+    }
+
+    .left-footer {
+      margin-top: auto;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      font-size: 0.74rem;
+      color: var(--text-muted);
+    }
+
+    .left-footer span.highlight {
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    /* Right side dashboard */
+    .panel {
+      background: var(--glass);
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--card-border);
+      padding: 18px 18px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.95);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    .panel-title {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .panel-title strong {
+      color: var(--text-main);
+    }
+
+    .chip-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      font-size: 0.75rem;
+    }
+
+    .chip {
+      padding: 4px 10px;
+      border-radius: var(--radius-pill);
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      color: var(--text-muted);
+    }
+
+    .chip.primary {
+      border-color: rgba(56, 189, 248, 0.9);
+      color: #e0f2fe;
+      background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.28), rgba(15, 23, 42, 0.95));
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .metric-card {
+      padding: 10px 10px 9px;
+      border-radius: 16px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.55);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 0.7rem;
+    }
+
+    .metric-label {
+      color: var(--text-muted);
+    }
+
+    .metric-value {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .metric-trend {
+      font-size: 0.7rem;
+      color: var(--success);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .metric-trend.down {
+      color: var(--danger);
+    }
+
+    .metric-pill {
+      align-self: flex-start;
+      margin-top: 2px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 0.64rem;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      color: var(--text-muted);
+    }
+
+    .usage-section {
+      margin-top: 4px;
+      padding: 10px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.12), rgba(79, 70, 229, 0.14));
+      border: 1px solid rgba(56, 189, 248, 0.6);
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+      gap: 10px;
+      align-items: center;
+    }
+
+    .usage-label-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .usage-label-row strong {
+      color: #e5e7eb;
+    }
+
+    .bar-shell {
+      width: 100%;
+      height: 7px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.8);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .bar-fill {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, #22d3ee, #6366f1);
+      transform-origin: left;
+      transform: scaleX(0.78);
+      border-radius: inherit;
+      box-shadow: 0 0 16px rgba(56, 189, 248, 0.6);
+    }
+
+    .mini-stats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+      font-size: 0.68rem;
+    }
+
+    .mini-stat {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .mini-label { color: var(--text-muted); }
+    .mini-value { font-weight: 500; }
+
+    .env-row {
+      margin-top: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    .env-pills {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .env-pill {
+      padding: 3px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+    }
+
+    .env-pill.live {
+      border-color: rgba(52, 211, 153, 0.8);
+      color: #bbf7d0;
+      background: rgba(22, 163, 74, 0.2);
+    }
+
+    .activity-section {
+      margin-top: 6px;
+      padding-top: 8px;
+      border-top: 1px dashed rgba(148, 163, 184, 0.5);
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+      gap: 10px;
+      font-size: 0.73rem;
+    }
+
+    .activity-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .activity-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .activity-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+    }
+
+    .activity-dot.blue { background: #38bdf8; }
+    .activity-dot.green { background: #4ade80; }
+    .activity-dot.pink { background: #fb7185; }
+
+    .activity-text-main {
+      color: #e5e7eb;
+    }
+
+    .activity-text-sub {
+      color: var(--text-muted);
+      font-size: 0.7rem;
+    }
+
+    .sparkline-shell {
+      height: 58px;
+      border-radius: 15px;
+      background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.32), rgba(15, 23, 42, 0.9));
+      border: 1px solid rgba(56, 189, 248, 0.7);
+      padding: 6px 8px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .sparkline-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    .sparkline-value { color: #e0f2fe; font-weight: 600; }
+
+    .sparkline-graph {
+      flex: 1;
+      display: grid;
+      align-items: flex-end;
+      grid-auto-flow: column;
+      gap: 2px;
+    }
+
+    .sparkline-bar {
+      width: 100%;
+      border-radius: 999px 999px 0 0;
+      background: linear-gradient(to top, rgba(15, 23, 42, 0.1), rgba(248, 250, 252, 0.95));
+      opacity: 0.82;
+    }
+
+    .sparkline-footer {
+      display: flex;
+      justify-content: flex-end;
+      font-size: 0.65rem;
+      color: #e0f2fe;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .sparkline-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #e0f2fe;
+    }
+
+    /* Floating toggle card */
+    .floating-toggle {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      border-radius: 999px;
+      padding: 4px 8px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      -webkit-backdrop-filter: blur(16px);
+      backdrop-filter: blur(16px);
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 38px;
+      height: 18px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.8);
+      padding: 1px;
+      cursor: pointer;
+    }
+
+    .toggle-thumb {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 14px;
+      height: 14px;
+      border-radius: 999px;
+      background: radial-gradient(circle at top left, #22d3ee, #6366f1);
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.9);
+      transition: transform 0.22s ease;
+    }
+
+    .toggle-switch.active .toggle-thumb {
+      transform: translateX(16px);
+    }
+
+    /* subtle entry animation */
+    .shell {
+      opacity: 0;
+      transform: translateY(18px) scale(0.99);
+      animation: shellIn 0.65s ease-out forwards;
+    }
+
+    @keyframes shellIn {
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    /* Responsiveness */
+    @media (max-width: 900px) {
+      body {
+        padding: 22px 14px;
+      }
+
+      .shell {
+        grid-template-columns: minmax(0, 1fr);
+        padding: 20px 18px 18px;
+      }
+
+      .divider {
+        display: none;
+      }
+
+      .right {
+        order: -1;
+      }
+
+      .shell::before {
+        top: auto;
+        bottom: -30px;
+        right: -6px;
+        font-size: 80px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .cta-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .left-footer {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      h1 {
+        font-size: 2.2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="grid-bg"></div>
+  <div class="glow-orb"></div>
+  <div class="glow-orb orb-2"></div>
+
+  <main class="shell">
+    <div class="divider"></div>
+
+    <section class="left">
+      <div class="badge-row">
+        <div class="pill-badge">
+          <span class="pill-dot"></span>
+          LIVE CLUSTER
+          <span class="pill-text-sub">Auto‑scaling in real time</span>
+        </div>
+        <div class="tiny-pill">
+          <span class="spark"></span>
+          99.99% uptime
+        </div>
+      </div>
+
+      <h1>
+        Effortless <span>Cloud Control</span>
+      </h1>
+      <p class="subtitle">
+        Orchestrate your <strong>compute</strong>, <strong>storage</strong>, and <strong>networking</strong> with a single beautiful dashboard.
+        Watch your infrastructure adapt <strong>in real‑time</strong> as your apps scale.
+      </p>
+
+      <div class="cta-row">
+        <button class="btn-primary" id="launchDemo">
+          Launch Interactive Demo
+          <span style="font-size: 1.1rem;">⮕</span>
+        </button>
+        <button class="btn-secondary">
+          <span class="btn-secondary-icon">⚡</span>
+          Explore docs in 2 minutes
+        </button>
+      </div>
+
+      <div class="confidence-row">
+        <div class="avatars">
+          <div class="avatar"></div>
+          <div class="avatar"></div>
+          <div class="avatar"></div>
+          <div class="avatar"></div>
+        </div>
+        <span>
+          Trusted by <strong>3.2K+ cloud teams</strong> for production workloads.
+        </span>
+      </div>
+
+      <div class="left-footer">
+        <span>🚀 Deploy from zero to global edge in under <span class="highlight">90 seconds</span>.</span>
+        <span>🔒 Enterprise‑grade security baked in by default.</span>
+      </div>
+    </section>
+
+    <section class="right">
+      <div class="panel">
+        <div class="floating-toggle">
+          Auto‑healing
+          <div class="toggle-switch" id="autoToggle">
+            <div class="toggle-thumb"></div>
+          </div>
+        </div>
+
+        <header class="panel-header">
+          <div class="panel-title">
+            Realtime Overview · <strong>CloudSphere</strong>
+          </div>
+          <div class="chip-row">
+            <span class="chip primary">Latency 42ms</span>
+            <span class="chip">US‑EAST‑1</span>
+          </div>
+        </header>
+
+        <div class="metric-grid">
+          <article class="metric-card">
+            <div class="metric-label">Live containers</div>
+            <div class="metric-value" id="containersMetric">128</div>
+            <div class="metric-trend" id="containersTrend">
+              ▲ 12% vs last hour
+            </div>
+            <div class="metric-pill">Auto‑scaled across 4 regions</div>
+          </article>
+
+          <article class="metric-card">
+            <div class="metric-label">CPU utilization</div>
+            <div class="metric-value" id="cpuMetric">63%</div>
+            <div class="metric-trend down" id="cpuTrend">
+              ▼ 5% vs baseline
+            </div>
+            <div class="metric-pill">Optimized by smart scheduler</div>
+          </article>
+
+          <article class="metric-card">
+            <div class="metric-label">Error rate</div>
+            <div class="metric-value" id="errorMetric">0.03%</div>
+            <div class="metric-trend down" id="errorTrend">
+              ▼ Stable · healthy
+            </div>
+            <div class="metric-pill">All services passing checks</div>
+          </article>
+        </div>
+
+        <section class="usage-section">
+          <div>
+            <div class="usage-label-row">
+              <span>Cluster capacity</span>
+              <span><strong id="capacityValue">78%</strong> used</span>
+            </div>
+            <div class="bar-shell">
+              <div class="bar-fill" id="capacityBar"></div>
+            </div>
+            <div class="mini-stats">
+              <div class="mini-stat">
+                <span class="mini-label">Requests / min</span>
+                <span class="mini-value" id="rpmStat">84.2K</span>
+              </div>
+              <div class="mini-stat">
+                <span class="mini-label">Data throughput</span>
+                <span class="mini-value" id="throughputStat">3.4 TB</span>
+              </div>
+              <div class="mini-stat">
+                <span class="mini-label">Cost / hour</span>
+                <span class="mini-value" id="costStat">$42.10</span>
+              </div>
+              <div class="mini-stat">
+                <span class="mini-label">Carbon offset</span>
+                <span class="mini-value" id="carbonStat">+62%</span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="env-row">
+              <span>Active environments</span>
+              <div class="env-pills">
+                <span class="env-pill">Dev</span>
+                <span class="env-pill">Staging</span>
+                <span class="env-pill live">Production</span>
+              </div>
+            </div>
+            <div class="activity-section">
+              <div class="activity-list">
+                <div class="activity-item">
+                  <span class="activity-dot blue"></span>
+                  <div>
+                    <div class="activity-text-main">New deployment · v3.8.12</div>
+                    <div class="activity-text-sub">Completed 2 min ago · Canary 10%</div>
+                  </div>
+                </div>
+                <div class="activity-item">
+                  <span class="activity-dot.green"></span>
+                  <div>
+                    <div class="activity-text-main">Traffic spike absorbed</div>
+                    <div class="activity-text-sub">+41% users · no downtime</div>
+                  </div>
+                </div>
+                <div class="activity-item">
+                  <span class="activity-dot pink"></span>
+                  <div>
+                    <div class="activity-text-main">Anomaly guardrail</div>
+                    <div class="activity-text-sub">2 unusual patterns auto‑mitigated</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="sparkline-shell">
+                <div class="sparkline-header">
+                  <span>Realtime load</span>
+                  <span class="sparkline-value" id="loadValue">72%</span>
+                </div>
+                <div class="sparkline-graph" id="sparkline">
+                  <!-- bars injected by JS -->
+                </div>
+                <div class="sparkline-footer">
+                  <span class="sparkline-dot"></span>
+                  Last 60 seconds
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // Simple, lightweight interactive touches for a "live" feel
+    (function () {
+      const capacityBar = document.getElementById('capacityBar');
+      const capacityValue = document.getElementById('capacityValue');
+      const loadValue = document.getElementById('loadValue');
+      const sparkline = document.getElementById('sparkline');
+      const autoToggle = document.getElementById('autoToggle');
+      const launchDemo = document.getElementById('launchDemo');
+
+      // Create sparkline bars
+      const barCount = 32;
+      const heights = Array.from({ length: barCount }, () => 30 + Math.random() * 60);
+      heights.forEach((h) => {
+        const bar = document.createElement('div');
+        bar.className = 'sparkline-bar';
+        bar.style.height = h + '%';
+        sparkline.appendChild(bar);
+      });
+
+      let tick = 0;
+      function animate() {
+        tick += 1;
+        const t = tick / 70;
+
+        // Capacity gently oscillates
+        const capacity = 0.74 + Math.sin(t) * 0.04;
+        capacityBar.style.transform = 'scaleX(' + capacity.toFixed(2) + ')';
+        capacityValue.textContent = Math.round(capacity * 100) + '%';
+
+        // Load value wiggles a bit
+        const load = 0.68 + Math.cos(t * 1.4) * 0.06;
+        loadValue.textContent = Math.round(load * 100) + '%';
+
+        // Subtle sparkline breathing effect
+        Array.from(sparkline.children).forEach((bar, idx) => {
+          const base = heights[idx];
+          const variance = Math.sin(t * 3 + idx * 0.55) * 8;
+          bar.style.height = Math.max(16, base + variance) + '%';
+        });
+
+        requestAnimationFrame(animate);
+      }
+
+      animate();
+
+      autoToggle.addEventListener('click', () => {
+        autoToggle.classList.toggle('active');
+      });
+
+      launchDemo.addEventListener('click', () => {
+        alert('This is a static demo. You can hook this button into your real cloud backend to go live!');
+      });
+    })();
+  </script>
+</body>
+</html>
